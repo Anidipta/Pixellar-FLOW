@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session
 from typing import List
+from pydantic import BaseModel
 
 from contextlib import asynccontextmanager
 
@@ -38,12 +39,32 @@ def get_db():
 
 
 # Users
+class UserCreate(BaseModel):
+    username: str | None = None
+    email: str | None = None
+    display_name: str | None = None
+    wallet_address: str | None = None
+
+
 @app.post("/users/", response_model=models.User)
-def create_user(user: models.User, db: Session = Depends(get_db)):
-    existing = crud.get_user_by_username(db, user.username)
+def create_user(user: UserCreate, db: Session = Depends(get_db)):
+    # prefer username lookup, else wallet lookup
+    existing = None
+    if user.username:
+        existing = crud.get_user_by_username(db, user.username)
+    if not existing and user.wallet_address:
+        existing = crud.get_user_by_wallet(db, user.wallet_address)
+
     if existing:
-        raise HTTPException(status_code=400, detail="Username already registered")
-    return crud.create_user(db, user)
+        return existing
+
+    # Build minimal user data for DB
+    payload = {
+        "username": user.username,
+        "wallet_address": user.wallet_address or ("0x" + (user.username or "")).lower(),
+        # profile_url will be generated in crud.create_user if missing
+    }
+    return crud.create_user(db, payload)
 
 
 @app.get("/users/", response_model=List[models.User])
@@ -69,11 +90,44 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
 
 # Artworks
 @app.post("/artworks/", response_model=models.Artwork)
-def create_artwork(artwork: models.Artwork, db: Session = Depends(get_db)):
+class ArtworkCreate(BaseModel):
+    title: str
+    description: str | None = None
+    image_url: str | None = None
+    price_cents: int | None = None
+    is_published: bool = False
+    owner_id: int | None = None
+
+
+@app.post("/artworks/", response_model=models.Artwork)
+def create_artwork(artwork: ArtworkCreate, db: Session = Depends(get_db)):
     # ensure owner exists if provided
     if artwork.owner_id is not None and not crud.get_user(db, artwork.owner_id):
         raise HTTPException(status_code=400, detail="Owner (user) not found")
-    return crud.create_artwork(db, artwork)
+
+    # map incoming payload to Artwork model fields; fill required defaults
+    price_flow = None
+    if artwork.price_cents is not None:
+        price_flow = float(artwork.price_cents) / 100.0
+    else:
+        price_flow = 0.0
+
+    art = models.Artwork(
+        artwork_code=(artwork.title[:9] or "art") + "00001",
+        creator_id=artwork.owner_id or 0,
+        creator_wallet="",
+        title=artwork.title,
+        description=artwork.description or "",
+        pixel_data="[]",
+        width=64,
+        height=64,
+        unlock_password="000000",
+        price_flow=price_flow,
+        publish_fee=0.0,
+        is_published=artwork.is_published,
+        thumbnail_url=artwork.image_url or "",
+    )
+    return crud.create_artwork(db, art)
 
 
 @app.get("/artworks/", response_model=List[models.Artwork])

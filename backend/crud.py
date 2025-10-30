@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 from sqlmodel import Session, select
 import models, database
 
@@ -12,11 +12,32 @@ def get_user_by_username(db: Session, username: str) -> Optional[models.User]:
     return db.exec(statement).first()
 
 
-def create_user(db: Session, user: models.User) -> models.User:
-    db.add(user)
+def get_user_by_wallet(db: Session, wallet_address: str) -> Optional[models.User]:
+    statement = select(models.User).where(models.User.wallet_address == wallet_address)
+    return db.exec(statement).first()
+
+
+def create_user(db: Session, user: Union[models.User, dict]) -> models.User:
+    if isinstance(user, models.User):
+        u = user
+    else:
+        # sanitize minimal fields for users table
+        data = dict(user)
+        # ensure required fields
+        if 'wallet_address' not in data or data.get('wallet_address') is None:
+            # try to build from username like previous client behavior
+            uname = data.get('username')
+            if uname and not uname.startswith('0x'):
+                data['wallet_address'] = '0x' + uname
+        if 'profile_url' not in data or data.get('profile_url') is None:
+            # generate simple profile_url from username or wallet
+            base = data.get('username') or (data.get('wallet_address') or '').replace('0x','')
+            data['profile_url'] = (base[:9]).ljust(9, '0')
+        u = models.User(**{k: v for k, v in data.items() if k in models.User.__fields__})
+    db.add(u)
     db.commit()
-    db.refresh(user)
-    return user
+    db.refresh(u)
+    return u
 
 
 def list_users(db: Session, limit: int = 100, offset: int = 0) -> List[models.User]:
@@ -41,7 +62,7 @@ def get_artwork(db: Session, artwork_id: int) -> Optional[models.Artwork]:
 def list_artworks(db: Session, owner_id: Optional[int] = None, limit: int = 100, offset: int = 0) -> List[models.Artwork]:
     statement = select(models.Artwork)
     if owner_id is not None:
-        statement = statement.where(models.Artwork.owner_id == owner_id)
+        statement = statement.where(models.Artwork.creator_id == owner_id)
     statement = statement.offset(offset).limit(limit)
     return db.exec(statement).all()
 

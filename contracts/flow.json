@@ -5,12 +5,6 @@
 			"aliases": {
 				"testing": "0000000000000007"
 			}
-		},
-		"HelloWorld": {
-			"source": "cadence/contracts/HelloWorld.cdc",
-			"aliases": {
-				"testing": "0000000000000007"
-			}
 		}
 	},
 	"networks": {

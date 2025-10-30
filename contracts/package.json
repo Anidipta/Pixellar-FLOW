@@ -1,0 +1,16 @@
+{
+  "name": "contracts",
+  "version": "1.0.0",
+  "description": "This project is a starting point for you to develop smart contracts on the Flow Blockchain. It comes with example contracts, scripts, transactions, and tests to help you get started.",
+  "main": "index.js",
+  "scripts": {
+    "deploy:emulator": "dotenv -e .env -- flow project deploy --network emulator",
+    "deploy:testnet": "dotenv -e .env -- flow project deploy --network testnet"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "dotenv-cli": "^11.0.0"
+  }
+}
