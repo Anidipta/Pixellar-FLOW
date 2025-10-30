@@ -22,10 +22,10 @@ export default function LoginPage() {
 
   if (isConnected && user) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-neon mb-4">Welcome to Pixeller</h1>
-          <p className="text-secondary mb-2">Connected: {user.address}</p>
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-3xl w-full text-center neon-glow p-8 rounded-lg backdrop-blur-sm" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.5))' }}>
+          <h1 className="text-4xl font-extrabold text-neon mb-3 floaty">Welcome to Pixeller</h1>
+          <p className="text-muted-foreground mb-2">Connected: <span className="font-mono">{user.address}</span></p>
           <p className="text-primary font-bold mb-8">Balance: {balance} FLOW</p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link href="/paint">
@@ -48,17 +48,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-neon mb-2">PIXELLER</h1>
-          <p className="text-secondary text-lg">Web3 Pixel Art Marketplace</p>
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="max-w-2xl w-full text-center">
+        <div className="mb-8">
+          <h1 className="text-6xl font-extrabold text-neon mb-2 floaty">PIXELLER</h1>
+          <p className="text-muted-foreground text-lg">Web3 Pixel Art Marketplace</p>
           <div className="mt-4 h-1 w-24 bg-primary mx-auto neon-glow"></div>
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-8 neon-glow">
+        <div className="bg-card border border-border rounded-lg p-8 neon-glow" style={{ backdropFilter: 'blur(6px)', background: 'linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0.55))' }}>
           <h2 className="text-2xl font-bold mb-6 text-center">Connect Wallet</h2>
-          <p className="text-muted-foreground mb-6 text-center text-sm">
+          <p className="text-foreground mb-6 text-center text-sm black">
             Connect your Flow wallet to start creating and trading pixel art
           </p>
 

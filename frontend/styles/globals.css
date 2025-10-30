@@ -4,16 +4,17 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
+  /* Light orange / cream palette */
+  --background: 255 244 230; /* used as RGB triple for CSS color with alpha */
+  --foreground: 51 34 17;
+  --card: 255 250 245;
+  --card-foreground: 51 34 17;
+  --popover: 255 250 245;
+  --popover-foreground: 51 34 17;
+  --primary: 255 140 66; /* soft orange */
+  --primary-foreground: 255 255 255;
+  --secondary: 244 162 109;
+  --secondary-foreground: 51 34 17;
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
@@ -40,16 +41,16 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
+  --background: 34 34 34;
+  --foreground: 240 240 240;
+  --card: 24 24 24;
+  --card-foreground: 240 240 240;
+  --popover: 34 34 34;
+  --popover-foreground: 240 240 240;
+  --primary: 255 140 66;
+  --primary-foreground: 255 255 255;
+  --secondary: 244 162 109;
+  --secondary-foreground: 240 240 240;
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.269 0 0);
@@ -120,6 +121,42 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    position: relative;
+    min-height: 100vh;
+    /* background GIF with slight dark overlay */
+    background-image: url('/bg.gif');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: rgb(var(--foreground));
+    /* subtle fallback background color */
+    background-color: rgb(var(--background));
   }
+
+  /* Dark translucent overlay to improve contrast */
+  body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+  }
+
+  /* Neon / glow helpers */
+  .neon-glow {
+    box-shadow: 0 6px 30px rgba(255, 140, 66, 0.12), 0 2px 8px rgba(0,0,0,0.08);
+    background: linear-gradient(180deg, rgba(var(--card),0.9), rgba(var(--card),0.95));
+  }
+  .neon-glow-hover:hover {
+    box-shadow: 0 10px 40px rgba(255, 140, 66, 0.18), 0 4px 12px rgba(0,0,0,0.12);
+  }
+
+  .text-neon { color: rgb(var(--primary)); }
+  .bg-primary { background-color: rgb(var(--primary)) !important; }
+  .text-primary { color: rgb(var(--primary)); }
+  .text-primary-foreground { color: rgb(var(--primary-foreground)); }
+
+  /* small float animation */
+  @keyframes floaty { 0% { transform: translateY(0px); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0px); } }
+  .floaty { animation: floaty 6s ease-in-out infinite; }
 }
