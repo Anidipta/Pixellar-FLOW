@@ -2,15 +2,24 @@
 
 import React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { useWallet } from "@/lib/wallet-context"
 
 export default function SiteHeader() {
   const { user, isConnected, disconnectWallet } = useWallet()
+  const router = useRouter()
 
   const shortAddr = (addr?: string) => {
     if (!addr) return ""
     return addr.slice(0, 6) + "…" + addr.slice(-4)
+  }
+
+  const handleProfileHover = (e: React.MouseEvent) => {
+    if (!user?.backend?.profile_url) return
+    const url = `/profile/${user.backend.profile_url}`
+    // navigate on hover as requested
+    router.push(url)
   }
 
   return (
@@ -29,7 +38,13 @@ export default function SiteHeader() {
         <div className="flex items-center gap-3">
           {isConnected && user ? (
             <div className="flex items-center gap-3">
-              <div className="text-sm text-muted-foreground">{shortAddr(user.address)}</div>
+              <div
+                className="text-sm text-muted-foreground cursor-pointer"
+                onMouseEnter={handleProfileHover}
+                title={user?.backend?.profile_url ? `Go to profile /profile/${user.backend.profile_url}` : user?.address}
+              >
+                {shortAddr(user.address)}
+              </div>
               <Button variant="outline" onClick={disconnectWallet} className="!border-secondary !text-secondary">
                 Disconnect
               </Button>

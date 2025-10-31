@@ -27,33 +27,40 @@ export default function ProfilePage() {
   const [publishedArtworks, setPublishedArtworks] = useState<any[]>([])
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("pixeller_user")
-    if (savedUser) {
-      const userData = JSON.parse(savedUser)
-      if (userData.profileId === profileId) {
-        setUser(userData)
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
 
-        // Load user's artworks
-        const allArt = JSON.parse(localStorage.getItem("pixeller_art") || "[]")
-        const userArt = allArt.filter((art: any) => art.creator === userData.address)
-        setUserArtworks(userArt)
+    async function fetchProfile() {
+      try {
+        const res = await fetch(`${API_URL}/users/by-profile/${profileId}`)
+        if (!res.ok) {
+          setUser(null)
+          return
+        }
+        const backendUser = await res.json()
+        setUser(backendUser)
 
-        // Load published artworks
-        const published = JSON.parse(localStorage.getItem("pixeller_published") || "[]")
-        const userPublished = published.filter((art: any) => art.creatorId === userData.profileId)
-        setPublishedArtworks(userPublished)
+        // Load user's artworks from backend
+        try {
+          const artRes = await fetch(`${API_URL}/artworks/?owner_id=${backendUser.id}`)
+          if (artRes.ok) {
+            const artJson = await artRes.json()
+            setUserArtworks(artJson)
+          }
+        } catch (err) {
+          console.warn("Failed to fetch user artworks", err)
+        }
 
-        // Calculate stats
-        const totalEarnings = userPublished.reduce((sum: number, art: any) => sum + (art.totalEarnings || 0), 0)
-        setStats({
-          totalArtworks: userArt.length,
-          totalSales: userPublished.reduce((sum: number, art: any) => sum + (art.sales || 0), 0),
-          totalEarnings: totalEarnings,
-          followers: Math.floor(Math.random() * 500) + 10,
-          following: Math.floor(Math.random() * 200) + 5,
-        })
+        // For publishedArtworks and stats we can approximate from artworks
+        const published = []
+        setPublishedArtworks(published)
+        setStats((s) => ({ ...s, totalArtworks: (backendUser.total_artworks || 0) }))
+      } catch (err) {
+        console.error("Failed to fetch profile", err)
+        setUser(null)
       }
     }
+
+    fetchProfile()
   }, [profileId])
 
   const handleUpdateProfile = (updatedUser: any) => {
@@ -211,15 +218,15 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-muted-foreground mb-2">Wallet Address</p>
-                    <p className="text-foreground font-mono">{user.address}</p>
+                    <p className="text-foreground font-mono">{user.wallet_address}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-2">Profile ID</p>
-                    <p className="text-foreground font-mono">{user.profileId}</p>
+                    <p className="text-foreground font-mono">{user.profile_url}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-2">Profile Link</p>
-                    <p className="text-foreground font-mono break-all">/profile/{user.profileId}</p>
+                    <p className="text-foreground font-mono break-all">/profile/{user.profile_url}</p>
                   </div>
                   <Button
                     onClick={() => setIsEditModalOpen(true)}

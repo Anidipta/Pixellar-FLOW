@@ -36,11 +36,13 @@ export default function LoginPage() {
                 Browse Market
               </Button>
             </Link>
-            <Link href={`/profile/${user.profileId}`}>
-              <Button variant="outline" className="border-primary text-primary hover:bg-primary/10 bg-transparent">
-                My Profile
-              </Button>
-            </Link>
+            {user?.backend?.profile_url ? (
+              <Link href={`/profile/${user.backend.profile_url}`}>
+                <Button variant="outline" className="border-primary text-primary hover:bg-primary/10 bg-transparent">
+                  My Profile
+                </Button>
+              </Link>
+            ) : null}
           </div>
         </div>
       </div>

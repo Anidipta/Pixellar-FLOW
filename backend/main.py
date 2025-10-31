@@ -80,6 +80,14 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     return user
 
 
+@app.get("/users/by-profile/{profile_url}", response_model=models.User)
+def read_user_by_profile(profile_url: str, db: Session = Depends(get_db)):
+    user = crud.get_user_by_profile(db, profile_url)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
 @app.delete("/users/{user_id}")
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     success = crud.delete_user(db, user_id)
